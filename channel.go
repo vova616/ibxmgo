@@ -877,9 +877,9 @@ func (this *Channel) trigger() {
 			if !isPorta {
 				this.sample = this.instrument.samples[this.instrument.keyToSample[this.noteKey]]
 			}
-			fineTune := byte(this.sample.fineTune)
+			fineTune := this.sample.fineTune
 			if this.noteEffect == 0x75 || this.noteEffect == 0xF2 { /* Set FineTune. */
-				fineTune = (byte)((this.noteParam & 0xF) << 4)
+				fineTune = (int)(int8(((this.noteParam & 0xF) << 4)))
 			}
 			key := this.noteKey + this.sample.relNote
 			if key < 1 {

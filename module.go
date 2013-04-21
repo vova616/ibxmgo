@@ -372,13 +372,13 @@ func DecodeMOD(reader *bufio.Reader) (*Module, error) {
 		m.gain = 64
 		break
 	case 0x484e: /* xCHN */
-		m.numChannels = int(buff[1080]) - 48
+		m.numChannels = int(int8(buff[1080])) - 48
 		m.c2Rate = NTSC
 		m.gain = 32
 		break
 	case 0x4348: /* xxCH */
-		m.numChannels = (int(buff[1080]) - 48) * 10
-		m.numChannels += int(buff[1081]) - 48
+		m.numChannels = (int(int8(buff[1080])) - 48) * 10
+		m.numChannels += int(int8(buff[1081])) - 48
 		m.c2Rate = NTSC
 		m.gain = 32
 		break
@@ -478,7 +478,7 @@ func DecodeMOD(reader *bufio.Reader) (*Module, error) {
 			loopLength = 0
 		}
 		for idx, end := 0, sampleLength; idx < end; idx++ {
-			sampleData[idx] = (int16)(buff[moduleDataIdx]) << 8
+			sampleData[idx] = (int16)(int8(buff[moduleDataIdx])) << 8
 			moduleDataIdx++
 		}
 		sample.setSampleData(sampleData, loopStart, loopLength, false)
@@ -685,14 +685,14 @@ func DecodeXM(reader *bufio.Reader) (*Module, error) {
 			sampleLoopStart := binary.LittleEndian.Uint32(buff[sampleHeaderOffset+4:])
 			sampleLoopLength := binary.LittleEndian.Uint32(buff[sampleHeaderOffset+8:])
 
-			sample.volume = int(buff[sampleHeaderOffset+12])
-			sample.fineTune = int(buff[sampleHeaderOffset+13])
+			sample.volume = int(int8(buff[sampleHeaderOffset+12]))
+			sample.fineTune = int(int8(buff[sampleHeaderOffset+13]))
 			sample.c2Rate = NTSC
 			looped := (buff[sampleHeaderOffset+14] & 0x3) > 0
 			pingPong := (buff[sampleHeaderOffset+14] & 0x2) > 0
 			sixteenBit := (buff[sampleHeaderOffset+14] & 0x10) > 0
 			sample.panning = int(buff[sampleHeaderOffset+15])
-			sample.relNote = int(buff[sampleHeaderOffset+16])
+			sample.relNote = int(int8(buff[sampleHeaderOffset+16]))
 			sample.name = string(buff[sampleHeaderOffset+18 : sampleHeaderOffset+18+22])
 			sampleHeaderOffset += 40
 			sampleDataLength := sampleDataBytes
@@ -707,18 +707,18 @@ func DecodeXM(reader *bufio.Reader) (*Module, error) {
 			}
 			sampleData := make([]int16, sampleDataLength)
 			if sixteenBit {
-				ampl := int16(0)
+				ampl := uint16(0)
 				for outIdx := uint32(0); outIdx < sampleDataLength; outIdx++ {
 					inIdx := dataOffset + outIdx*2
-					ampl += int16(buff[inIdx])
-					ampl += int16(buff[inIdx+1]) << 8
-					sampleData[outIdx] = ampl
+					ampl += uint16(buff[inIdx])
+					ampl += uint16(buff[inIdx+1]) << 8
+					sampleData[outIdx] = int16(ampl)
 				}
 			} else {
 				ampl := byte(0)
 				for outIdx := uint32(0); outIdx < sampleDataLength; outIdx++ {
-					ampl += buff[dataOffset+outIdx] & 0xFF
-					sampleData[outIdx] = (int16(ampl) << 8)
+					ampl += buff[dataOffset+outIdx]
+					sampleData[outIdx] = int16(uint16(ampl) << 8)
 				}
 			}
 
