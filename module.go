@@ -674,15 +674,16 @@ func DecodeXM(reader *bufio.Reader) (*Module, error) {
 		}
 
 		dataOffset += binary.LittleEndian.Uint32(buff[dataOffset:])
+
 		sampleHeaderOffset := dataOffset
 		dataOffset += uint32(numSamples) * 40
 		for samIdx := 0; samIdx < numSamples; samIdx++ {
 			sample := &Sample{}
 			instrument.samples[samIdx] = sample
 
-			sampleDataBytes := uint32(binary.LittleEndian.Uint16(buff[sampleHeaderOffset:]))
-			sampleLoopStart := uint32(binary.LittleEndian.Uint16(buff[sampleHeaderOffset+4:]))
-			sampleLoopLength := uint32(binary.LittleEndian.Uint16(buff[sampleHeaderOffset+8:]))
+			sampleDataBytes := binary.LittleEndian.Uint32(buff[sampleHeaderOffset:])
+			sampleLoopStart := binary.LittleEndian.Uint32(buff[sampleHeaderOffset+4:])
+			sampleLoopLength := binary.LittleEndian.Uint32(buff[sampleHeaderOffset+8:])
 
 			sample.volume = int(buff[sampleHeaderOffset+12])
 			sample.fineTune = int(buff[sampleHeaderOffset+13])
