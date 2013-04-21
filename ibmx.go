@@ -101,7 +101,13 @@ func (this *IBXM) Dump(w io.Writer) error {
 		n, end := this.GetAudio(data)
 		n *= 2
 		for i := 0; i < n; i++ {
-			binary.LittleEndian.PutUint16(buff[i*2:], uint16(data[i]))
+			x := data[i]
+			if x > 32767 {
+				x = 32767
+			} else if x < -32768 {
+				x = -32768
+			}
+			binary.LittleEndian.PutUint16(buff[i*2:], uint16(x))
 		}
 		_, e := w.Write(buff[:n*2])
 		if e != nil {
