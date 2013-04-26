@@ -69,10 +69,8 @@ func main() {
 	source := openal.NewSource()
 	source.SetPitch(1)
 	source.SetGain(1)
-	position := &openal.Vector{0, 0, 0}
-	velocity := &openal.Vector{0, 0, 0}
-	source.SetPosition(position)
-	source.SetVelocity(velocity)
+	source.SetPosition(0, 0, 0)
+	source.SetVelocity(0, 0, 0)
 	source.SetLooping(false)
 
 	buffer := openal.NewBuffer()

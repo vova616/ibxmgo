@@ -59,6 +59,10 @@ func (this *IBXM) SequencePos() int {
 	return this.seqPos
 }
 
+func (this *IBXM) Module() *Module {
+	return this.module
+}
+
 /* Set the resampling quality to one of
    Channel.NEAREST, Channel.LINEAR, or Channel.SINC. */
 func (this *IBXM) SetInterpolation(interpolation Interpolation) {
@@ -71,7 +75,7 @@ func (this *IBXM) SetInterpolation(interpolation Interpolation) {
    A "sample" is a pair of 16-bit integer amplitudes, one for each of the stereo channels. */
 func (this *IBXM) GetAudio(outputBuf []int32) (samples int, songEnd bool) {
 
-	tickLen := this.calculateTickLen(this.tempo, this.sampleRate)
+	tickLen := this.CalculateTickLen(this.tempo, this.sampleRate)
 	// Clear output buffer.
 	//
 	end := (tickLen + 65) * 4
@@ -92,7 +96,7 @@ func (this *IBXM) GetAudio(outputBuf []int32) (samples int, songEnd bool) {
 
 /* Dump raw audio data */
 func (this *IBXM) Dump(w io.Writer) error {
-	data := make([]int32, this.MixBufferLength())
+	data := make([]int32, this.AudioBufferLength())
 	buff := make([]byte, len(data)*2)
 	t := this.SequencePos()
 	this.SetSequencePos(0)
@@ -121,11 +125,11 @@ func (this *IBXM) Dump(w io.Writer) error {
 }
 
 /* Returns the length of the buffer required by getAudio(). */
-func (this *IBXM) MixBufferLength() int {
-	return (this.calculateTickLen(32, 128000) + 65) * 4
+func (this *IBXM) AudioBufferLength() int {
+	return (this.CalculateTickLen(32, 128000) + 65) * 4
 }
 
-func (this *IBXM) calculateTickLen(tempo int, samplingRate int) int {
+func (this *IBXM) CalculateTickLen(tempo int, samplingRate int) int {
 	return (samplingRate * 5) / (tempo * 2)
 }
 
@@ -190,14 +194,18 @@ func (this *IBXM) doTick() bool {
 	return songEnd
 }
 
+func (this *IBXM) SampleRate() int {
+	return this.sampleRate
+}
+
 /* Returns the song duration in samples at the current sampling rate. */
-func (this *IBXM) SongDuration() int {
+func (this *IBXM) Length() int {
 	duration := 0
 	p := this.seqPos
 	this.SetSequencePos(0)
 	songEnd := false
 	for !songEnd {
-		duration += this.calculateTickLen(this.tempo, this.sampleRate)
+		duration += this.CalculateTickLen(this.tempo, this.sampleRate)
 		songEnd = this.doTick()
 	}
 	this.SetSequencePos(p)
